@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Lista de la Abuela</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --papel: #fdf8f0;
+  --tinta: #2a1a0e;
+  --tinta2: #5c3d1e;
+  --tinta3: #8b6340;
+  --linea: #d4c4a8;
+  --acento: #8b2020;
+  --acento2: #c0392b;
+  --verde: #2d6e45;
+  --azul: #1a3a6e;
+  --naranja: #7a3d10;
+  --morado: #4a2060;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: #c8b89a;
+  background-image:
+    radial-gradient(ellipse at 20% 20%, #b8a888 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 80%, #d4c4a4 0%, transparent 60%);
+  min-height: 100vh;
+  padding: 20px 12px 50px;
+  font-family: 'Lora', serif;
+}
+
+.notebook {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--papel);
+  border-radius: 4px 12px 12px 4px;
+  box-shadow: -8px 0 0 #8b7355, -10px 0 0 #6b5535, 4px 4px 20px rgba(0,0,0,0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.notebook::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0; width: 28px;
+  background: repeating-linear-gradient(
+    to bottom, transparent 0px, transparent 18px,
+    #8b7355 18px, #8b7355 22px, transparent 22px, transparent 36px
+  );
+  z-index: 10;
+}
+
+.notebook-inner {
+  padding: 20px 20px 30px 38px;
+  background-image: repeating-linear-gradient(
+    transparent, transparent 31px, var(--linea) 31px, var(--linea) 32px
+  );
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  padding: 10px 0 18px;
+  border-bottom: 2px solid var(--acento);
+  margin-bottom: 20px;
+}
+.header::after { content:''; display:block; height:1px; background:var(--acento); margin-top:4px; opacity:0.4; }
+.title { font-family:'Caveat',cursive; font-size:2.4rem; font-weight:700; color:var(--acento); line-height:1; }
+.subtitle { font-family:'Lora',serif; font-style:italic; font-size:0.85rem; color:var(--tinta3); margin-top:4px; }
+.deco { font-size:1.1rem; margin:4px 0; opacity:0.7; }
+
+/* TABS */
+.tabs { display:flex; margin-bottom:14px; border-bottom:2px solid var(--linea); }
+.tab {
+  flex:1; padding:8px 4px;
+  font-family:'Caveat',cursive; font-size:1.1rem; font-weight:600;
+  background:transparent; border:none; cursor:pointer;
+  color:var(--tinta3); border-bottom:3px solid transparent; margin-bottom:-2px;
+  transition:color 0.15s, border-color 0.15s;
+}
+.tab.active { color:var(--acento); border-bottom-color:var(--acento); }
+
+.panel { display:none; }
+.panel.active { display:block; }
+
+.input-label { font-family:'Caveat',cursive; font-size:1.15rem; color:var(--tinta2); display:block; margin-bottom:6px; }
+
+textarea {
+  width:100%; min-height:130px; background:transparent; border:none;
+  border-bottom:1px dashed var(--tinta3);
+  font-family:'Caveat',cursive; font-size:1.15rem; color:var(--tinta);
+  resize:vertical; outline:none; line-height:32px; padding:0 4px;
+  caret-color:var(--acento);
+}
+textarea::placeholder { color:#c0a880; font-style:italic; }
+
+/* FOTO */
+.foto-area {
+  border:2px dashed var(--linea); border-radius:8px; padding:18px;
+  text-align:center; cursor:pointer;
+  background:rgba(255,255,255,0.4); transition:border-color 0.2s;
+}
+.foto-area.has-image { border-color:var(--verde); border-style:solid; }
+.foto-icon { font-size:2.5rem; display:block; margin-bottom:6px; }
+.foto-hint { font-family:'Caveat',cursive; font-size:1.1rem; color:var(--tinta3); }
+.foto-hint small { display:block; font-size:0.85rem; margin-top:3px; color:#b0956a; font-style:italic; font-family:'Lora',serif; }
+#fileInput { display:none; }
+
+.preview-wrap { display:none; margin-top:12px; position:relative; }
+.preview-wrap.show { display:block; }
+#imgPreview { width:100%; max-height:200px; object-fit:contain; border-radius:6px; border:1px solid var(--linea); background:white; }
+.btn-quitar {
+  position:absolute; top:6px; right:6px;
+  background:var(--acento); color:white; border:none; border-radius:50%;
+  width:26px; height:26px; font-size:14px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-family:'Caveat',cursive;
+}
+
+/* BTN PRINCIPAL */
+.btn-organizar {
+  margin-top:14px; width:100%; padding:13px;
+  background:var(--acento); color:#fdf8f0; border:none; border-radius:6px;
+  font-family:'Caveat',cursive; font-size:1.35rem; font-weight:700; cursor:pointer;
+  box-shadow:0 3px 0 #5a1010, 0 4px 10px rgba(0,0,0,0.2);
+  transition:transform 0.1s, box-shadow 0.1s;
+}
+.btn-organizar:active { transform:translateY(2px); box-shadow:0 1px 0 #5a1010; }
+.btn-organizar:disabled { background:#b09070; box-shadow:0 2px 0 #806040; cursor:not-allowed; }
+
+.error-msg {
+  display:none; background:#fde8e8; border:1px solid var(--acento2); border-radius:6px;
+  padding:10px 14px; font-family:'Caveat',cursive; font-size:1.1rem; color:var(--acento); margin-top:10px;
+}
+.error-msg.show { display:block; }
+
+/* LOADING */
+.loading { display:none; text-align:center; padding:24px; font-family:'Caveat',cursive; font-size:1.2rem; color:var(--tinta3); }
+.loading.show { display:block; }
+.loading-dots span { display:inline-block; animation:bounce 1.2s infinite; font-size:1.6rem; }
+.loading-dots span:nth-child(2) { animation-delay:0.2s; }
+.loading-dots span:nth-child(3) { animation-delay:0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-7px)} }
+
+/* RESULTADO */
+.resultado { display:none; animation:fadeIn 0.4s ease; }
+.resultado.show { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+.result-header { font-family:'Caveat',cursive; font-size:1.1rem; color:var(--tinta3); text-align:center; margin-bottom:14px; font-style:italic; }
+
+.progress-wrap { margin-bottom:18px; }
+.progress-bar { background:var(--linea); border-radius:20px; height:8px; overflow:hidden; border:1px solid #c0a880; }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--verde),#4a9e60); border-radius:20px; transition:width 0.4s ease; }
+.progress-label { text-align:center; font-family:'Caveat',cursive; font-size:1rem; color:var(--tinta3); margin-top:4px; }
+
+.seccion { margin-bottom:18px; border-left:3px solid var(--linea); padding-left:10px; }
+.sec-titulo { font-family:'Caveat',cursive; font-size:1.25rem; font-weight:700; margin-bottom:6px; }
+.sec-titulo.c0{color:var(--acento)} .sec-titulo.c1{color:var(--verde)} .sec-titulo.c2{color:var(--naranja)}
+.sec-titulo.c3{color:var(--azul)} .sec-titulo.c4{color:var(--morado)} .sec-titulo.c5{color:#6a6a10}
+.sec-titulo.c6{color:#10606a} .sec-titulo.c7{color:#604a10}
+
+.item {
+  display:flex; align-items:flex-start; padding:7px 6px; cursor:pointer;
+  border-bottom:1px dashed #e0d0b8; gap:10px;
+  user-select:none; -webkit-tap-highlight-color:transparent;
+  border-radius:4px; transition:background 0.15s;
+}
+.item:last-child { border-bottom:none; }
+.item:active { background:rgba(0,0,0,0.04); }
+.item.done { opacity:0.5; }
+
+.cb {
+  width:20px; height:20px; border-radius:50%; border:2px solid #b0956a;
+  flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center;
+  background:white; font-size:12px; font-weight:700; color:white; transition:all 0.2s;
+}
+.item.done .cb { background:var(--verde); border-color:var(--verde); }
+
+.item-text { font-family:'Caveat',cursive; font-size:1.15rem; color:var(--tinta); flex:1; line-height:1.3; }
+.item.done .item-text { text-decoration:line-through; color:#a09070; }
+.item-nota { display:block; font-size:0.82rem; color:var(--tinta3); font-family:'Lora',serif; font-style:italic; margin-top:1px; }
+
+.btn-row { display:flex; gap:10px; margin-top:20px; }
+.btn-nueva { flex:1; padding:11px; background:transparent; border:2px solid var(--acento); border-radius:6px; font-family:'Caveat',cursive; font-size:1.15rem; color:var(--acento); cursor:pointer; font-weight:700; }
+.btn-reset { flex:1; padding:11px; background:var(--tinta2); border:none; border-radius:6px; font-family:'Caveat',cursive; font-size:1.15rem; color:var(--papel); cursor:pointer; font-weight:700; }
+
+.sep { text-align:center; font-size:1.1rem; color:var(--linea); margin:16px 0; letter-spacing:6px; }
+
+.coffee-stain {
+  position:absolute; border-radius:50%; pointer-events:none;
+  background:radial-gradient(ellipse, transparent 40%, rgba(120,80,30,0.08) 60%, rgba(120,80,30,0.12) 70%, transparent 80%);
+}
+.cs1 { width:80px; height:65px; top:60px; right:20px; transform:rotate(15deg); }
+.cs2 { width:70px; height:55px; bottom:120px; right:30px; transform:rotate(-20deg); opacity:0.7; }
+
+/* PANTALLA CELEBRACIÓN */
+.celebracion {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--papel);
+  background-image: repeating-linear-gradient(
+    transparent, transparent 31px, var(--linea) 31px, var(--linea) 32px
+  );
+  z-index: 100;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 30px;
+  animation: celebEntrada 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.celebracion.show { display: flex; }
+
+@keyframes celebEntrada {
+  from { opacity:0; transform: scale(0.8); }
+  to   { opacity:1; transform: scale(1); }
+}
+
+.abuela-wrap {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+/* Abuelita estilo manga con SVG inline */
+.abuela-svg {
+  width: 160px;
+  height: 160px;
+  animation: abuelaFlot 2.5s ease-in-out infinite;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.15));
+}
+
+@keyframes abuelaFlot {
+  0%,100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-10px) rotate(1deg); }
+}
+
+/* Líneas de velocidad manga */
+.speed-lines {
+  position: absolute;
+  inset: -20px;
+  pointer-events: none;
+  animation: spinLines 8s linear infinite;
+}
+@keyframes spinLines { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+.celeb-titulo {
+  font-family: 'Caveat', cursive;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--acento);
+  line-height: 1.1;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+/* Efecto "onomatopeya" manga */
+.celeb-titulo::before {
+  content: '★';
+  position: absolute;
+  top: -18px; left: -10px;
+  font-size: 1rem;
+  color: #e8a020;
+  animation: starPop 1s ease infinite alternate;
+}
+.celeb-titulo::after {
+  content: '★';
+  position: absolute;
+  top: -14px; right: -8px;
+  font-size: 0.8rem;
+  color: #e8a020;
+  animation: starPop 1s ease 0.3s infinite alternate;
+}
+@keyframes starPop { from{transform:scale(1) rotate(0deg)} to{transform:scale(1.4) rotate(20deg)} }
+
+.celeb-sub {
+  font-family: 'Lora', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--tinta3);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* Burbuja de diálogo estilo manga */
+.burbuja {
+  background: white;
+  border: 2.5px solid var(--tinta);
+  border-radius: 20px 20px 20px 4px;
+  padding: 12px 20px;
+  font-family: 'Caveat', cursive;
+  font-size: 1.2rem;
+  color: var(--tinta);
+  margin-bottom: 30px;
+  position: relative;
+  box-shadow: 3px 3px 0 var(--tinta);
+  max-width: 280px;
+}
+.burbuja::after {
+  content: '';
+  position: absolute;
+  bottom: -14px; left: 20px;
+  border: 7px solid transparent;
+  border-top-color: var(--tinta);
+}
+.burbuja::before {
+  content: '';
+  position: absolute;
+  bottom: -10px; left: 22px;
+  border: 5px solid transparent;
+  border-top-color: white;
+  z-index: 1;
+}
+
+.btn-nueva-compra {
+  padding: 13px 32px;
+  background: var(--acento);
+  color: #fdf8f0;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Caveat', cursive;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #5a1010, 0 4px 10px rgba(0,0,0,0.2);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-nueva-compra:active { transform: translateY(2px); box-shadow: 0 1px 0 #5a1010; }
+</style>
+</head>
+<body>
+
+<div class="notebook">
+  <div class="coffee-stain cs1"></div>
+  <div class="coffee-stain cs2"></div>
+  <div class="notebook-inner">
+
+    <div class="header">
+      <div class="deco">✿ ❧ ✿</div>
+      <div class="title">La Lista</div>
+      <div class="subtitle">Escribe, pega o haz una foto</div>
+    </div>
+
+    <div id="inputSection">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('texto')">✏️ Escribir / Pegar</button>
+        <button class="tab" onclick="switchTab('foto')">📷 Foto de lista</button>
+      </div>
+
+      <div class="panel active" id="panelTexto">
+        <label class="input-label">Escribe o pega tu lista:</label>
+        <textarea id="txtLista" placeholder="- leche&#10;- 3 tomates&#10;- macarrones&#10;- pechuga de pollo&#10;- lo que sea, como quieras..."></textarea>
+      </div>
+
+      <div class="panel" id="panelFoto">
+        <label class="input-label">Haz o sube una foto:</label>
+        <div class="foto-area" id="fotoArea" onclick="document.getElementById('fileInput').click()">
+          <span class="foto-icon">📸</span>
+          <span class="foto-hint">
+            Toca para abrir cámara o galería
+            <small>Lista escrita a mano o impresa</small>
+          </span>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="onFoto(event)">
+        <div class="preview-wrap" id="previewWrap">
+          <img id="imgPreview" src="" alt="Vista previa">
+          <button class="btn-quitar" onclick="quitarFoto(event)">✕</button>
+        </div>
+      </div>
+
+      <button class="btn-organizar" id="btnOrganizar" onclick="organizar()">✨ Organizar la lista</button>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="loading-dots"><span>🛒</span><span>✏️</span><span>📋</span></div>
+      <p style="margin-top:8px" id="loadingMsg">La abuela está organizando...</p>
+    </div>
+
+    <div class="resultado" id="resultado">
+      <p class="result-header">✿ Lista lista para el mercado ✿</p>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+        <p class="progress-label" id="pLabel">0 de 0 artículos</p>
+      </div>
+      <div id="listaOrganizada"></div>
+      <div class="sep">· · ·</div>
+      <div class="btn-row">
+        <button class="btn-nueva" onclick="nuevaLista()">✏️ Nueva lista</button>
+        <button class="btn-reset" onclick="resetTachar()">↺ Borrar tachados</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PANTALLA CELEBRACIÓN -->
+<div class="celebracion" id="celebracion">
+  <div class="abuela-wrap">
+    <!-- Líneas de velocidad manga -->
+    <svg class="speed-lines" viewBox="0 0 200 200" style="position:absolute;inset:-20px;width:calc(100%+40px);height:calc(100%+40px);">
+      <line x1="100" y1="100" x2="100" y2="0"   stroke="#e8d8b8" stroke-width="1.5" opacity="0.5"/>
+      <line x1="100" y1="100" x2="170" y2="30"  stroke="#e8d8b8" stroke-width="1" opacity="0.4"/>
+      <line x1="100" y1="100" x2="200" y2="100" stroke="#e8d8b8" stroke-width="1.5" opacity="0.5"/>
+      <line x1="100" y1="100" x2="170" y2="170" stroke="#e8d8b8" stroke-width="1" opacity="0.4"/>
+      <line x1="100" y1="100" x2="100" y2="200" stroke="#e8d8b8" stroke-width="1.5" opacity="0.5"/>
+      <line x1="100" y1="100" x2="30"  y2="170" stroke="#e8d8b8" stroke-width="1" opacity="0.4"/>
+      <line x1="100" y1="100" x2="0"   y2="100" stroke="#e8d8b8" stroke-width="1.5" opacity="0.5"/>
+      <line x1="100" y1="100" x2="30"  y2="30"  stroke="#e8d8b8" stroke-width="1" opacity="0.4"/>
+    </svg>
+    <!-- Abuelita SVG estilo manga -->
+    <svg class="abuela-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+      <!-- Cuerpo / ropa -->
+      <ellipse cx="80" cy="118" rx="30" ry="28" fill="#7a5a9a"/>
+      <!-- Delantal -->
+      <ellipse cx="80" cy="120" rx="18" ry="20" fill="#f0e8d8"/>
+      <!-- Cuello -->
+      <rect x="72" y="88" width="16" height="12" rx="4" fill="#f5c8a0"/>
+      <!-- Cabeza -->
+      <ellipse cx="80" cy="72" rx="28" ry="26" fill="#f5c8a0"/>
+      <!-- Pelo blanco con moño -->
+      <ellipse cx="80" cy="50" rx="26" ry="14" fill="white"/>
+      <ellipse cx="80" cy="44" rx="14" ry="10" fill="white"/>
+      <!-- Moño -->
+      <circle cx="80" cy="38" r="8" fill="white" stroke="#ccc" stroke-width="1"/>
+      <circle cx="80" cy="38" r="4" fill="#e8d8f0"/>
+      <!-- Pasador -->
+      <rect x="74" y="36" width="12" height="3" rx="1.5" fill="#9a70ba"/>
+      <!-- Ojos manga grandes -->
+      <ellipse cx="68" cy="72" rx="8" ry="9" fill="white" stroke="#2a1a0e" stroke-width="1.5"/>
+      <ellipse cx="92" cy="72" rx="8" ry="9" fill="white" stroke="#2a1a0e" stroke-width="1.5"/>
+      <!-- Iris -->
+      <ellipse cx="68" cy="73" rx="5" ry="6" fill="#5a3a8a"/>
+      <ellipse cx="92" cy="73" rx="5" ry="6" fill="#5a3a8a"/>
+      <!-- Pupila -->
+      <ellipse cx="68" cy="74" rx="3" ry="3.5" fill="#1a0a2e"/>
+      <ellipse cx="92" cy="74" rx="3" ry="3.5" fill="#1a0a2e"/>
+      <!-- Brillo ojo -->
+      <circle cx="70" cy="70" r="1.8" fill="white"/>
+      <circle cx="94" cy="70" r="1.8" fill="white"/>
+      <!-- Cejas expresivas arriba -->
+      <path d="M61 61 Q68 57 75 61" stroke="#6a4a2a" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M85 61 Q92 57 99 61" stroke="#6a4a2a" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Nariz pequeña -->
+      <path d="M78 79 Q80 82 82 79" stroke="#d4a080" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Sonrisa grande manga -->
+      <path d="M66 86 Q80 96 94 86" stroke="#2a1a0e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Líneas mejilla (rubor manga) -->
+      <line x1="58" y1="78" x2="64" y2="78" stroke="#f4a0a0" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="58" y1="81" x2="63" y2="81" stroke="#f4a0a0" stroke-width="2" stroke-linecap="round"/>
+      <line x1="96" y1="78" x2="102" y2="78" stroke="#f4a0a0" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="97" y1="81" x2="102" y2="81" stroke="#f4a0a0" stroke-width="2" stroke-linecap="round"/>
+      <!-- Gafas (abuelita clásica) -->
+      <circle cx="68" cy="72" r="10" fill="none" stroke="#8b6a30" stroke-width="1.5" opacity="0.6"/>
+      <circle cx="92" cy="72" r="10" fill="none" stroke="#8b6a30" stroke-width="1.5" opacity="0.6"/>
+      <line x1="78" y1="72" x2="82" y2="72" stroke="#8b6a30" stroke-width="1.5" opacity="0.6"/>
+      <!-- Brazo izquierdo -->
+      <path d="M52 105 Q42 118 48 130" stroke="#7a5a9a" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <!-- Mano izquierda con pulgar arriba -->
+      <ellipse cx="50" cy="133" rx="9" ry="8" fill="#f5c8a0"/>
+      <!-- Pulgar -->
+      <path d="M50 125 Q44 120 43 114 Q46 110 50 115" fill="#f5c8a0" stroke="#d4a080" stroke-width="1"/>
+      <!-- Brazo derecho (bajado) -->
+      <path d="M108 105 Q118 118 114 128" stroke="#7a5a9a" stroke-width="10" fill="none" stroke-linecap="round"/>
+      <ellipse cx="114" cy="131" rx="9" ry="8" fill="#f5c8a0"/>
+      <!-- Estrellas decorativas -->
+      <text x="20" y="65" font-size="14" fill="#e8a020">✦</text>
+      <text x="128" y="55" font-size="10" fill="#e8a020">✦</text>
+      <text x="130" y="90" font-size="8" fill="#f4c0c0">♥</text>
+      <text x="18" y="95" font-size="8" fill="#f4c0c0">♥</text>
+    </svg>
+  </div>
+
+  <div class="burbuja">¡Compra hecha, cariño! 👍</div>
+
+  <div class="celeb-titulo">¡Lista completa!</div>
+  <p class="celeb-sub">La abuela está orgullosa de ti 🌸</p>
+
+  <button class="btn-nueva-compra" onclick="nuevaCompra()">✏️ Nueva lista</button>
+</div>
+
+<script>
+let itemStates = {}, listaData = [];
+let tabActivo = 'texto';
+let imgB64 = null, imgMime = null;
+const COLORES = ['c0','c1','c2','c3','c4','c5','c6','c7'];
+
+const PROMPT = `Eres un asistente que organiza listas de la compra.
+Organiza los artículos en categorías lógicas de supermercado.
+Responde ÚNICAMENTE con JSON válido, sin texto extra, sin bloques de código.
+Formato exacto:
+{"secciones":[{"nombre":"🥩 Carne y embutidos","items":[{"nombre":"Pechuga de pollo","nota":""},{"nombre":"Sardinas","nota":"x2"}]}]}
+Reglas:
+- Emojis en nombre de sección.
+- Cantidades/detalles en "nota"; si no hay, "nota":"".
+- Categorías: frutas/verduras, carnes/embutidos, lácteos, panadería, conservas/salsas, bebidas, congelados, limpieza, varios.
+- No inventes artículos. Solo organiza lo que hay.`;
+
+function switchTab(tab) {
+  tabActivo = tab;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='texto')||(i===1&&tab==='foto')));
+  document.getElementById('panelTexto').classList.toggle('active', tab==='texto');
+  document.getElementById('panelFoto').classList.toggle('active', tab==='foto');
+  hideError();
+}
+
+function onFoto(e) {
+  const file = e.target.files[0]; if (!file) return;
+  imgMime = file.type || 'image/jpeg';
+  const r = new FileReader();
+  r.onload = ev => {
+    imgB64 = ev.target.result.split(',')[1];
+    document.getElementById('imgPreview').src = ev.target.result;
+    document.getElementById('previewWrap').classList.add('show');
+    document.getElementById('fotoArea').classList.add('has-image');
+  };
+  r.readAsDataURL(file);
+}
+
+function quitarFoto(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  imgB64 = null; imgMime = null;
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('previewWrap').classList.remove('show');
+  document.getElementById('fotoArea').classList.remove('has-image');
+  document.getElementById('fileInput').value = '';
+}
+
+async function organizar() {
+  hideError();
+  let messages;
+
+  if (tabActivo === 'texto') {
+    const txt = document.getElementById('txtLista').value.trim();
+    if (!txt) { showError('¡Escribe o pega algo primero!'); return; }
+    messages = [{ role:'user', content: PROMPT + '\n\nLista:\n' + txt }];
+    document.getElementById('loadingMsg').textContent = 'La abuela está organizando...';
+  } else {
+    if (!imgB64) { showError('Primero sube o haz una foto de la lista.'); return; }
+    messages = [{
+      role: 'user',
+      content: [
+        { type:'image', source:{ type:'base64', media_type:imgMime, data:imgB64 } },
+        { type:'text', text: PROMPT + '\n\nLee todos los artículos de la imagen y organízalos.' }
+      ]
+    }];
+    document.getElementById('loadingMsg').textContent = 'Leyendo la foto...';
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, messages })
+    });
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.error?.message||'Error '+res.status); }
+    const data = await res.json();
+    const raw = data.content.map(b=>b.text||'').join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    listaData = parsed.secciones || [];
+    itemStates = {};
+    renderLista();
+    setLoading(false);
+    document.getElementById('inputSection').style.display = 'none';
+    document.getElementById('resultado').classList.add('show');
+  } catch(e) {
+    setLoading(false);
+    showError('Algo salió mal: ' + e.message);
+  }
+}
+
+function renderLista() {
+  const cont = document.getElementById('listaOrganizada');
+  cont.innerHTML = '';
+  listaData.forEach((sec,si) => {
+    const div = document.createElement('div'); div.className = 'seccion';
+    const h = document.createElement('div'); h.className = `sec-titulo ${COLORES[si%COLORES.length]}`; h.textContent = sec.nombre;
+    div.appendChild(h);
+    (sec.items||[]).forEach((item,ii) => {
+      const key = `${si}-${ii}`;
+      const row = document.createElement('div');
+      row.className = 'item' + (itemStates[key]?' done':'');
+      row.innerHTML = `<div class="cb">${itemStates[key]?'✓':''}</div><div class="item-text">${item.nombre}${item.nota?`<span class="item-nota">${item.nota}</span>`:''}</div>`;
+      row.addEventListener('click', () => {
+        itemStates[key] = !itemStates[key];
+        row.classList.toggle('done', itemStates[key]);
+        row.querySelector('.cb').textContent = itemStates[key]?'✓':'';
+        updateProgress();
+      });
+      div.appendChild(row);
+    });
+    cont.appendChild(div);
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = listaData.reduce((a,s)=>a+(s.items||[]).length,0);
+  const done = Object.values(itemStates).filter(Boolean).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('pFill').style.width = pct+'%';
+  document.getElementById('pLabel').textContent = `${done} de ${total} artículos`;
+  if (total > 0 && done === total) {
+    setTimeout(() => {
+      document.getElementById('resultado').classList.remove('show');
+      document.getElementById('celebracion').classList.add('show');
+    }, 400);
+  }
+}
+
+function nuevaCompra() {
+  document.getElementById('celebracion').classList.remove('show');
+  document.getElementById('inputSection').style.display = '';
+  document.getElementById('txtLista').value = '';
+  quitarFoto({});
+  listaData = []; itemStates = {};
+}
+
+function nuevaLista() {
+  document.getElementById('resultado').classList.remove('show');
+  document.getElementById('inputSection').style.display = '';
+  document.getElementById('txtLista').value = '';
+  quitarFoto({});
+  listaData = []; itemStates = {};
+}
+
+function resetTachar() { itemStates = {}; renderLista(); }
+function setLoading(show) {
+  document.getElementById('loading').classList.toggle('show', show);
+  document.getElementById('inputSection').style.display = show?'none':'';
+  document.getElementById('btnOrganizar').disabled = show;
+}
+function showError(msg) { const el=document.getElementById('errorMsg'); el.textContent=msg; el.classList.add('show'); }
+function hideError() { document.getElementById('errorMsg').classList.remove('show'); }
+</script>
+</body>
+</html>
