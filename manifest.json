@@ -1,8 +1,8 @@
-﻿{
+{
   "name": "Lista de la Compra de la Abuela",
   "short_name": "Lista Abuela",
   "description": "Organiza tu compra por categorías con estilo de recetario",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "theme_color": "#fffaf0",
   "background_color": "#d4bd8c",
