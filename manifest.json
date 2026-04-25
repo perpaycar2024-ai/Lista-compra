@@ -1,0 +1,22 @@
+﻿{
+  "name": "Lista de la Compra de la Abuela",
+  "short_name": "Lista Abuela",
+  "description": "Organiza tu compra por categorías con estilo de recetario",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#fffaf0",
+  "background_color": "#d4bd8c",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

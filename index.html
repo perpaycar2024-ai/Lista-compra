@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Libreta de la Abuela - Lista Inteligente</title>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#fffaf0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Lista Abuela">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <style>
+        /* Aquí va TODO el CSS que tienes en tu versión final */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #d4bd8c;
+            background-image: radial-gradient(circle at 25% 40%, rgba(200,170,120,0.3) 2%, transparent 2.5%),
+                              radial-gradient(circle at 70% 85%, rgba(150,110,70,0.2) 1.8%, transparent 2.2%);
+            background-size: 40px 40px, 35px 35px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Caveat', 'Kalam', 'Patrick Hand', monospace;
+            padding: 16px;
+        }
+        .recipe-book {
+            width: 100%;
+            max-width: 750px;
+            height: 95vh;
+            max-height: 95vh;
+            background: #fffaf0;
+            background-image: linear-gradient(to bottom, #fdf8ed, #fff3e0);
+            border-radius: 32px 28px 40px 32px;
+            box-shadow: 25px 25px 40px rgba(0,0,0,0.2), inset 0 1px 4px rgba(255,255,200,0.8);
+            border: 1px solid #e0c8a0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .recipe-book::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: -30px;
+            width: 120px;
+            height: 35px;
+            background: #e6c394;
+            transform: rotate(-35deg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .recipe-book::after {
+            content: "✿ Recetario de la Abuela ✿";
+            position: absolute;
+            bottom: 12px;
+            right: 16px;
+            font-size: 10px;
+            font-family: 'Segoe UI', cursive;
+            color: #b8875a;
+            background: #f2e5cf;
+            padding: 2px 10px;
+            border-radius: 40px;
+            opacity: 0.75;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .book-header {
+            padding: 0.8rem 1.5rem 0.4rem 1.5rem;
+            border-bottom: 2px dashed #e7cba5;
+            text-align: center;
+            background: rgba(250, 240, 215, 0.6);
+            flex-shrink: 0;
+        }
+        .book-header h1 {
+            font-size: 1.8rem;
+            font-weight: 400;
+            font-family: 'Kalam', 'Caveat', cursive;
+            color: #5d3a1a;
+            text-shadow: 2px 2px 0 #eeddbb;
+        }
+        .book-header p {
+            font-size: 0.75rem;
+            color: #936e40;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        .paste-area {
+            padding: 8px 1.2rem 6px 1.2rem;
+            background: #fef7e9;
+            border-bottom: 1px solid #f0e2ce;
+            flex-shrink: 0;
+        }
+        .paste-area label {
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #b47c48;
+            letter-spacing: 0.5px;
+        }
+        .paste-box {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .paste-box textarea {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e2cfaa;
+            border-radius: 20px;
+            background: white;
+            font-family: 'Segoe UI', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            outline: none;
+        }
+        .paste-box button {
+            background: #f1d9b3;
+            border: none;
+            padding: 0 16px;
+            border-radius: 60px;
+            font-family: 'Patrick Hand', cursive;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #5a3a22;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #b48b54;
+            transform: translateY(-1px);
+            height: 42px;
+            margin-top: 0;
+            white-space: nowrap;
+        }
+        .add-item-area {
+            padding: 6px 1.2rem 10px 1.2rem;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: #fef7e9;
+            border-bottom: 1px solid #f0e2ce;
+            flex-shrink: 0;
+        }
+        .input-group {
+            flex: 2;
+            min-width: 130px;
+        }
+        .input-group label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: #b47c48;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2cfaa;
+            border-radius: 60px;
+            background: white;
+            font-family: 'Segoe UI', 'Kalam', monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        button {
+            background: #f1d9b3;
+            border: none;
+            padding: 0 18px;
+            border-radius: 60px;
+            font-family: 'Patrick Hand', cursive;
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #5a3a22;
+            cursor: pointer;
+            box-shadow: 0 2px 0 #b48b54;
+            transform: translateY(-1px);
+            height: 42px;
+            margin-top: 18px;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #b48b54;
+        }
+        .shopping-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 1.2rem 16px 1.2rem;
+            scrollbar-width: thin;
+        }
+        .category-block {
+            margin-bottom: 25px;
+            background: #fff9ef;
+            border-radius: 35px 20px 35px 20px;
+            padding: 8px 12px 12px 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05), inset 0 0 0 1px #fff8e7;
+        }
+        .category-title {
+            font-size: 1.4rem;
+            font-family: 'Caveat', cursive;
+            color: #a46e3a;
+            border-left: 8px solid #eabf8e;
+            padding-left: 15px;
+            margin: 10px 0 12px 0;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .item-list {
+            list-style: none;
+            padding-left: 8px;
+        }
+        .item-list li {
+            padding: 10px 8px 10px 12px;
+            margin: 6px 0;
+            background: #ffffffcc;
+            backdrop-filter: blur(1px);
+            border-radius: 48px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: 0.1s;
+            font-size: 1rem;
+            border: 1px solid #f2e2ca;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .item-check {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #c7a56b;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: 0.1s;
+        }
+        .item-check:checked {
+            background: #a2c48a;
+            border-color: #5c8042;
+        }
+        .item-check:checked::after {
+            content: "✓";
+            display: block;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2e4b1c;
+            line-height: 20px;
+        }
+        .item-name {
+            flex: 1;
+            font-family: 'Segoe UI', 'Patrick Hand', 'Kalam', sans-serif;
+            font-size: 1rem;
+            color: #4b2f16;
+            transition: 0.1s;
+        }
+        .item-check:checked + .item-name {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: #bf8f60;
+            color: #ab8a63;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #b59165;
+            font-family: 'Caveat', cursive;
+            font-size: 1.4rem;
+            background: #fff5e6;
+            border-radius: 70px;
+            margin: 20px 0;
+        }
+        .utils {
+            padding: 4px 1.2rem 12px 1.2rem;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .clear-btn {
+            background: #ffe2bc;
+            padding: 5px 15px;
+            font-size: 0.8rem;
+            height: auto;
+            margin-top: 0;
+            box-shadow: none;
+            transform: none;
+        }
+        footer {
+            font-size: 0.65rem;
+            text-align: center;
+            padding: 8px;
+            flex-shrink: 0;
+            border-top: 1px dashed #ecdbba;
+            color: #c2a072;
+            font-family: 'Segoe UI', cursive;
+        }
+        .grandma-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s, opacity 0.3s ease;
+        }
+        .grandma-modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-card {
+            background: #fff9ef;
+            max-width: 300px;
+            width: 85%;
+            padding: 25px 20px 30px;
+            border-radius: 64px 40px 64px 40px;
+            text-align: center;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            border: 3px solid #fad5a5;
+        }
+        .grandma-icon {
+            font-size: 85px;
+            filter: drop-shadow(4px 6px 0 #ebc28e);
+            margin-bottom: 5px;
+        }
+        .modal-card h3 {
+            font-size: 1.8rem;
+            color: #905e34;
+            margin: 10px 0;
+            font-family: 'Kalam', cursive;
+        }
+        .modal-card p {
+            font-size: 1.2rem;
+            color: #67431e;
+            background: #faeecf;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 40px;
+            font-family: 'Caveat', cursive;
+        }
+        .close-grandma {
+            background: #dbbc87;
+            border: none;
+            margin-top: 20px;
+            padding: 6px 25px;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            color: #3b2a18;
+            box-shadow: none;
+            transform: none;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="recipe-book">
+    <div class="book-header">
+        <h1>📖 Lista de la Compra 🥕</h1>
+        <p>✎ Pega un texto o añade uno a uno</p>
+    </div>
+    <div class="paste-area">
+        <label>📋 Pega aquí tu lista (ej: leche, pan, hamburguesas, longanizas, magro picado...)</label>
+        <div class="paste-box">
+            <textarea id="bulkText" rows="1" placeholder="Ejemplo: 3 manzanas, leche, pan de hamburguesa, magro picado, espinacas..."></textarea>
+            <button id="bulkAddBtn">✨ Organizar</button>
+        </div>
+    </div>
+    <div class="add-item-area">
+        <div class="input-group">
+            <label>🍎 Producto</label>
+            <input type="text" id="itemName" placeholder="Ej: Pan, Hamburguesas" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label>📦 Categoría</label>
+            <select id="itemCategory">
+                <option value="Verduras y Frutas">🥬 Verduras y Frutas</option>
+                <option value="Lácteos y Huevos">🥛 Lácteos y Huevos</option>
+                <option value="Carnes y Pescados">🍗 Carnes y Pescados</option>
+                <option value="Despensa">🥫 Despensa</option>
+                <option value="Bebidas">🥤 Bebidas</option>
+                <option value="Limpieza">🧼 Limpieza</option>
+                <option value="Otros">📦 Otros</option>
+            </select>
+        </div>
+        <button id="addBtn">➕ Añadir</button>
+    </div>
+    <div class="shopping-list-container" id="listContainer">
+        <div class="empty-message">✨ Añade ingredientes o pega un texto y se organizarán solitos ✨</div>
+    </div>
+    <div class="utils">
+        <button class="clear-btn" id="clearAllBtn">🗑️ Limpiar toda la lista</button>
+    </div>
+    <footer>✿ Tacha cada elemento, al terminar todos... ¡Llegará la abuela!</footer>
+</div>
+<div id="grandmaModal" class="grandma-modal">
+    <div class="modal-card">
+        <div class="grandma-icon">👵🏻🌸</div>
+        <h3>¡Lista completada!</h3>
+        <p>Lista completa, cariño ❤️</p>
+        <div style="font-size: 2rem;">🍲✨</div>
+        <button class="close-grandma" id="closeModalBtn">Cerrar</button>
+    </div>
+</div>
+<script>
+    let shoppingItems = [];
+    const keywordCategoryMap = [
+        { keywords: ["pan"], category: "Despensa" },
+        { keywords: ["manzana", "pera", "plátano", "banana", "naranja", "mandarina", "limón", "fresa", "frutilla", "sandía", "melón", "uva", "kiwi", "piña", "cereza"], category: "Verduras y Frutas" },
+        { keywords: ["lechuga", "tomate", "cebolla", "patata", "papa", "zanahoria", "brócoli", "coliflor", "espinaca", "acelga", "pimiento", "calabacín", "berenjena", "pepino", "aguacate"], category: "Verduras y Frutas" },
+        { keywords: ["leche", "yogur", "queso", "mantequilla", "nata", "crema", "huevo", "flan", "cuajada"], category: "Lácteos y Huevos" },
+        { keywords: ["pollo", "ternera", "cerdo", "cordero", "chuleta", "filete", "carne", "salchicha", "butifarra", "pechuga", "muslo", "hamburguesa", "hamburguesas", "longaniza", "longanizas", "chorizo", "chorizos", "salchichón", "lomo", "costilla", "albóndiga", "albóndigas", "picadillo", "carnicera", "entrecot", "solomillo", "magro picado"], category: "Carnes y Pescados" },
+        { keywords: ["pescado", "salmón", "merluza", "bacalao", "atún", "caballa", "sardina", "marisco", "gamba", "calamar"], category: "Carnes y Pescados" },
+        { keywords: ["arroz", "pasta", "fideos", "lenteja", "garbanzo", "judía", "alubia", "bizcocho", "galleta", "cereal", "harina", "azúcar", "sal", "aceite", "vinagre", "salsa", "levadura", "pan rallado"], category: "Despensa" },
+        { keywords: ["agua", "refresco", "zumo", "jugo", "vino", "cerveza", "cava", "sidra", "batido"], category: "Bebidas" },
+        { keywords: ["jabón", "detergente", "suavizante", "limpia", "fregasuelos", "lejía", "lavavajillas", "estropajo", "bayeta", "escoba"], category: "Limpieza" }
+    ];
+    function getCategoryFromName(n){let l=n.toLowerCase();for(let m of keywordCategoryMap)for(let k of m.keywords)if(l.includes(k))return m.category;return"Otros";}
+    function cleanItemName(r){let c=r.replace(/\b\d+(?:[.,]\d+)?\s*(kg|kgs|kilo|kilos|gr|gramo|gramos|l|ml|unidad|unidades|uds)\b/gi,'');c=c.replace(/^[\d\s.,\-*x×]+/,'');c=c.trim();if(!c)c=r.trim();return c.charAt(0).toUpperCase()+c.slice(1).toLowerCase();}
+    function parseBulkText(t){let l=t.split(/[,\n;]/),it=[];for(let line of l){line=line.trim();if(!line)continue;line=line.replace(/^[\s\-*•]+/,'');if(line.length){let cl=cleanItemName(line);if(cl.length>0&&cl.length<40)it.push(cl);else if(cl.length>=40)it.push(cl.substring(0,35)+"...");}}return it;}
+    function addMultipleItems(arr){if(!arr.length)return false;for(let n of arr){if(!n)continue;shoppingItems.push({id:Date.now()+Math.random(),name:n,category:getCategoryFromName(n),checked:false});}save();render();return true;}
+    function addSingleItem(n,c){if(!n.trim())return false;let cl=n.trim();shoppingItems.push({id:Date.now(),name:cl,category:c||getCategoryFromName(cl),checked:false});save();render();return true;}
+    function save(){localStorage.setItem("abuelaShoppingList",JSON.stringify(shoppingItems));}
+    function load(){let s=localStorage.getItem("abuelaShoppingList");shoppingItems=s?JSON.parse(s).map(i=>({...i,checked:i.checked||false})):[];}
+    function groupByCategory(items){let order=["Verduras y Frutas","Lácteos y Huevos","Carnes y Pescados","Despensa","Bebidas","Limpieza","Otros"];let map=new Map();order.forEach(c=>map.set(c,[]));items.forEach(i=>{if(!map.has(i.category))map.set(i.category,[]);map.get(i.category).push(i);});return order.filter(c=>map.get(c).length).map(c=>({category:c,items:map.get(c)})).concat([...map.entries()].filter(([c])=>!order.includes(c)&&c.length).map(([c,its])=>({category:c,items:its})));}
+    function allChecked(){return shoppingItems.length>0&&shoppingItems.every(i=>i.checked);}
+    function handleToggle(id){let idx=shoppingItems.findIndex(i=>i.id==id);if(idx==-1)return;shoppingItems[idx].checked=!shoppingItems[idx].checked;save();if(allChecked()){shoppingItems=[];save();render();document.getElementById('grandmaModal').classList.add('active');}else{render();document.getElementById('grandmaModal').classList.remove('active');}}
+    function render(){let cont=document.getElementById('listContainer');if(!shoppingItems.length){cont.innerHTML=`<div class="empty-message">📭 La lista está vacía... ¡añade ingredientes o pega un texto! 🥰</div>`;return;}let grouped=groupByCategory(shoppingItems);let html='';for(let g of grouped){html+=`<div class="category-block"><div class="category-title">📌 ${g.category}</div><ul class="item-list">`;for(let it of g.items){html+=`<li><input type="checkbox" class="item-check" data-id="${it.id}" ${it.checked?'checked':''}><span class="item-name">${escapeHtml(it.name)}</span></li>`;}html+=`</ul></div>`;}cont.innerHTML=html;document.querySelectorAll('.item-check').forEach(cb=>{cb.addEventListener('change',()=>handleToggle(parseFloat(cb.dataset.id)));});}
+    function escapeHtml(s){return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+    function clearAll(){if(shoppingItems.length&&confirm("¿Borrar toda la lista?")){shoppingItems=[];save();render();document.getElementById('grandmaModal').classList.remove('active');}}
+    function processBulk(){let raw=document.getElementById('bulkText').value;if(!raw.trim())return alert("Escribe algo, cariño");let it=parseBulkText(raw);if(!it.length)return alert("No encontré ingredientes");addMultipleItems(it);document.getElementById('bulkText').value='';document.getElementById('grandmaModal').classList.remove('active');}
+    load();render();
+    document.getElementById('addBtn').onclick=()=>{let n=document.getElementById('itemName').value;let c=document.getElementById('itemCategory').value;if(addSingleItem(n,c))document.getElementById('itemName').value='';else alert("Escribe un producto");document.getElementById('grandmaModal').classList.remove('active');};
+    document.getElementById('clearAllBtn').onclick=clearAll;
+    document.getElementById('bulkAddBtn').onclick=processBulk;
+    document.getElementById('closeModalBtn').onclick=()=>document.getElementById('grandmaModal').classList.remove('active');
+    document.getElementById('grandmaModal').onclick=e=>{if(e.target===document.getElementById('grandmaModal'))document.getElementById('grandmaModal').classList.remove('active');};
+    document.getElementById('itemName').addEventListener('keypress',e=>{if(e.key==='Enter')document.getElementById('addBtn').click();});
+    if(allChecked()&&shoppingItems.length){shoppingItems=[];save();render();document.getElementById('grandmaModal').classList.add('active');}
+    // Service Worker
+    if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(r=>console.log('SW OK',r)).catch(e=>console.log('SW error',e));});}
+</script>
+</body>
+</html>
